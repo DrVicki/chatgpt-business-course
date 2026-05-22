@@ -116,7 +116,7 @@ export default function CourseDashboard() {
                   <Bot className="w-4 h-4 text-teal-400" />
                 </div>
                 <span className="text-xs font-semibold text-teal-400 uppercase tracking-widest">
-                  Career Skills Course
+                  Career Skills Course | Dr. Vicki Bealman
                 </span>
               </div>
               <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 font-display leading-tight">
