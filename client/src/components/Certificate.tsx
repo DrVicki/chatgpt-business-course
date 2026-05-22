@@ -150,9 +150,9 @@ export default function Certificate() {
                 {/* Signature */}
                 <div className="text-center">
                   <img
-                    src="/manus-storage/VickiSignature_58bd9a90.png"
+                    src="/manus-storage/VickiSignature_ecde896a.png"
                     alt="Dr. Vicki Bealman signature"
-                    className="h-12 w-auto mx-auto mb-1 object-contain"
+                    className="h-16 w-auto mx-auto mb-1 object-contain"
                     style={{ filter: "opacity(0.85)" }}
                     onError={(e) => {
                       // Fallback if signature image not found

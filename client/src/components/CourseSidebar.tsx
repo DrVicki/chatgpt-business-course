@@ -134,7 +134,7 @@ export default function CourseSidebar({ onNavigate }: CourseSidebarProps) {
           </div>
           <div className="min-w-0">
             <p className="text-xs font-semibold text-teal-400 uppercase tracking-widest leading-none mb-0.5">
-              ChatGPT for Business
+              ChatGPT for Business | Dr. Vicki Bealman
             </p>
             <p className="text-[11px] text-slate-400 leading-none">10 Ways Course</p>
           </div>
