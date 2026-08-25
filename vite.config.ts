@@ -77,11 +77,9 @@ function writeToLogFile(source: LogSource, entries: unknown[]) {
 function vitePluginManusDebugCollector(): Plugin {
   return {
     name: "manus-debug-collector",
+    apply: "serve",
 
     transformIndexHtml(html) {
-      if (process.env.NODE_ENV === "production") {
-        return html;
-      }
       return {
         html,
         tags: [
@@ -206,6 +204,9 @@ function vitePluginStorageProxy(): Plugin {
 const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginStorageProxy()];
 
 export default defineConfig({
+  // GitHub Pages may serve this project from /<repository-name>/.
+  // Relative asset URLs keep the static build portable for project pages and custom domains.
+  base: "./",
   plugins,
   resolve: {
     alias: {
