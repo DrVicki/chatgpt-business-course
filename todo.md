@@ -8,6 +8,7 @@
 ## GitHub Pages Publishing Correction
 
 - [x] Inspect the current GitHub Pages source and published URL.
-- [ ] Synchronize the deployment workflow and static publishing files to GitHub.
+- [ ] Build a static course package in the repository’s `/docs` publishing directory.
+- [ ] Switch GitHub Pages to publish the `/docs` directory from `main`.
 - [ ] Verify the generated static entry point and update setup instructions.
 - [ ] Save the corrected GitHub Pages configuration.

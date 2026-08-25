@@ -150,7 +150,7 @@ export default function Certificate() {
                 {/* Signature */}
                 <div className="text-center">
                   <img
-                    src="/manus-storage/VickiSignature_ecde896a.png"
+                    src={`${import.meta.env.BASE_URL}VickiSignature.png`}
                     alt="Dr. Vicki Bealman signature"
                     className="h-16 w-auto mx-auto mb-1 object-contain"
                     style={{ filter: "opacity(0.85)" }}
