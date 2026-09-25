@@ -2,20 +2,26 @@
 // CERTIFICATE: Completion certificate with Dr. Vicki Bealman signature
 // Design: Elegant gold/teal, print-ready, LinkedIn share
 // ============================================================
+import { useRef, useState } from "react";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
+import { toast } from "sonner";
 import { useCourse } from "@/contexts/CourseContext";
-import { cn } from "@/lib/utils";
 import {
   Trophy,
   Download,
   CheckCircle2,
   Star,
   Bot,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 export default function Certificate() {
   const { learnerName, progress, isCourseComplete } = useCourse();
+  const certificateRef = useRef<HTMLDivElement>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const completionDate = progress.completedAt
     ? new Date(progress.completedAt).toLocaleDateString("en-US", {
@@ -28,6 +34,71 @@ export default function Certificate() {
         month: "long",
         day: "numeric",
       });
+
+  const handlePdfDownload = async () => {
+    const certificate = certificateRef.current;
+    if (!certificate) {
+      toast.error("Certificate preview is not available yet.");
+      return;
+    }
+
+    setIsDownloading(true);
+
+    try {
+      await document.fonts?.ready;
+
+      const canvas = await html2canvas(certificate, {
+        backgroundColor: "#ffffff",
+        scale: 3,
+        useCORS: true,
+        logging: false,
+        imageTimeout: 15000,
+      });
+
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "letter",
+        compress: true,
+      });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 9;
+      const availableWidth = pageWidth - margin * 2;
+      const availableHeight = pageHeight - margin * 2;
+      const aspectRatio = canvas.width / canvas.height;
+      let imageWidth = availableWidth;
+      let imageHeight = imageWidth / aspectRatio;
+
+      if (imageHeight > availableHeight) {
+        imageHeight = availableHeight;
+        imageWidth = imageHeight * aspectRatio;
+      }
+
+      const imageX = (pageWidth - imageWidth) / 2;
+      const imageY = (pageHeight - imageHeight) / 2;
+      pdf.addImage(
+        canvas.toDataURL("image/png"),
+        "PNG",
+        imageX,
+        imageY,
+        imageWidth,
+        imageHeight
+      );
+
+      const learnerSlug = (learnerName || "Course-Graduate")
+        .trim()
+        .replace(/[^a-z0-9]+/gi, "-")
+        .replace(/^-|-$/g, "");
+      pdf.save(`ChatGPT-Business-Certificate-${learnerSlug || "Graduate"}.pdf`);
+      toast.success("High-quality certificate PDF downloaded.");
+    } catch (error) {
+      console.error("Certificate PDF download failed", error);
+      toast.error("The certificate PDF could not be created. Please try again.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   if (!isCourseComplete) {
     return (
@@ -64,7 +135,7 @@ export default function Certificate() {
         className="max-w-3xl mx-auto space-y-4"
       >
         {/* Certificate Card */}
-        <div id="certificate-print">
+        <div id="certificate-print" ref={certificateRef}>
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -166,6 +237,15 @@ export default function Certificate() {
               </motion.div>
             </div>
 
+            <div className="px-8 py-2.5 border-t border-slate-100 bg-slate-50/70 text-center">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                Certificate ID{" "}
+                <span className="font-mono tracking-[0.08em] text-slate-500">
+                  {progress.certificateId || "Generating..."}
+                </span>
+              </p>
+            </div>
+
             {/* Bottom accent bar */}
             <div className="h-1.5 bg-gradient-to-r from-amber-400 via-teal-400 to-teal-500" />
           </motion.div>
@@ -179,12 +259,24 @@ export default function Certificate() {
           className="flex gap-3 justify-center flex-wrap"
         >
           <Button
+            className="gap-2 bg-teal-600 hover:bg-teal-700 text-white shadow-sm"
+            onClick={handlePdfDownload}
+            disabled={isDownloading || !progress.certificateId}
+          >
+            {isDownloading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            {isDownloading ? "Preparing PDF..." : "Download Certificate PDF"}
+          </Button>
+          <Button
             variant="outline"
             className="gap-2 border-slate-200"
             onClick={() => window.print()}
           >
             <Download className="w-4 h-4" />
-            Print / Save Certificate
+            Print Certificate
           </Button>
           <Button
             className="gap-2 bg-[#0A66C2] hover:bg-[#004182] text-white border-0 shadow-sm"

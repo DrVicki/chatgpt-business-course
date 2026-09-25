@@ -12,6 +12,7 @@ export interface CourseProgress {
   currentLessonId: string;
   startedAt: string | null;
   completedAt: string | null;
+  certificateId: string | null;
 }
 
 interface CourseContextType {
@@ -44,7 +45,17 @@ const defaultProgress: CourseProgress = {
   currentLessonId: modules[0].lessons[0].id,
   startedAt: null,
   completedAt: null,
+  certificateId: null,
 };
+
+function createCertificateId(): string {
+  const randomId =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID().replace(/-/g, "").slice(0, 10).toUpperCase()
+      : `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`.toUpperCase();
+
+  return `CGB-${randomId}`;
+}
 
 function serializeProgress(p: CourseProgress): string {
   return JSON.stringify({
@@ -54,6 +65,7 @@ function serializeProgress(p: CourseProgress): string {
     currentLessonId: p.currentLessonId,
     startedAt: p.startedAt,
     completedAt: p.completedAt,
+    certificateId: p.certificateId,
   });
 }
 
@@ -67,6 +79,7 @@ function deserializeProgress(raw: string): CourseProgress {
       currentLessonId: data.currentLessonId || modules[0].lessons[0].id,
       startedAt: data.startedAt || null,
       completedAt: data.completedAt || null,
+      certificateId: data.certificateId || null,
     };
   } catch {
     return { ...defaultProgress, completedLessons: new Set() };
@@ -111,6 +124,18 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
   const overallProgress = Math.round((completedCount / COMPUTED_TOTAL_LESSONS) * 100);
   const isCourseComplete = completedCount >= COMPUTED_TOTAL_LESSONS;
 
+  useEffect(() => {
+    if (!isCourseComplete || progress.certificateId) return;
+
+    setProgress((prev) => {
+      if (prev.certificateId || prev.completedLessons.size < COMPUTED_TOTAL_LESSONS) {
+        return prev;
+      }
+
+      return { ...prev, certificateId: createCertificateId() };
+    });
+  }, [isCourseComplete, progress.certificateId]);
+
   const isLessonCompleted = useCallback(
     (lessonId: string) => progress.completedLessons.has(lessonId),
     [progress.completedLessons]
@@ -149,6 +174,10 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
         completedLessons: newCompleted,
         startedAt: prev.startedAt || new Date().toISOString(),
         completedAt: isNowComplete ? new Date().toISOString() : prev.completedAt,
+        certificateId:
+          isNowComplete && !prev.certificateId
+            ? createCertificateId()
+            : prev.certificateId,
       };
     });
   }, []);
